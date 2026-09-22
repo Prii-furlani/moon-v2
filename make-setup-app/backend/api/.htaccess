@@ -1,0 +1,11 @@
+# Regras para API HostGator (Ambientes FastCGI / CGI)
+RewriteEngine On
+
+# Forçar o Apache a não descartar o cabeçalho de Autorização Bearer Token
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# Header CORS permitindo a passagem do Authorization
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Tenant-Id, X-User-Id, X-Requested-With"

@@ -1,0 +1,15 @@
+{
+  "name": "MoonFinance Me — Gestão Financeira",
+  "short_name": "MoonFinance",
+  "theme_color": "#1A1A1E",
+  "background_color": "#1A1A1E",
+  "display": "standalone",
+  "start_url": ".",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

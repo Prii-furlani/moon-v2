@@ -1,0 +1,477 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 37 38% 75%;
+    --foreground: 18 18% 15%;
+
+    --card: 30 45% 92%;
+    --card-foreground: 18 18% 15%;
+
+    --popover: 30 45% 92%;
+    --popover-foreground: 18 18% 15%;
+
+    --primary: 13 52% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 96 14% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 37 25% 85%;
+    --muted-foreground: 21 14% 37%;
+
+    --accent: 96 25% 92%;
+    --accent-foreground: 13 52% 35%;
+
+    --destructive: 6 53% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 37 28% 70%;
+    --input: 37 50% 95%;
+    --ring: 13 52% 35%;
+
+    --radius: 0.75rem;
+
+    /* Legacy MoonFinance 60-30-10 Color Scheme */
+    --bg-main: #D8C5A8;
+    --bg-card: #F4EAE0;
+    --bg-card-hover: #EFE3D7;
+    --bg-input: #FAF4E8;
+    --border-color: #CBB99C;
+    --text-main: #2C221E;
+    --text-muted: #6B5B52;
+    
+    --color-secondary: #7D916E;
+    --color-secondary-hover: #6B7F5C;
+    --bg-secondary-light: #EAEFE6;
+
+    --color-primary: #873F2B;
+    --color-primary-hover: #733423;
+    --bg-primary-light: #F7EDE9;
+
+    --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    --gradient-primary-hover: linear-gradient(135deg, var(--color-primary-hover), var(--color-secondary-hover));
+
+    --status-success: #607A56;
+    --status-success-bg: #EAEFE6;
+    --status-warning: #C9923B;
+    --status-warning-bg: #FAF4E8;
+    --status-error: #BC473A;
+    --status-error-bg: #FDF2F0;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    --shadow-sm: 0 2px 6px rgba(44, 34, 30, 0.04);
+    --shadow-md: 0 4px 16px rgba(44, 34, 30, 0.08);
+    --shadow-lg: 0 8px 30px rgba(44, 34, 30, 0.12);
+    
+    --skeleton-bg: #EAE0D5;
+    --skeleton-shimmer: #F4EFEA;
+  }
+
+  .dark {
+    --background: 18 20% 10%;
+    --foreground: 30 30% 92%;
+
+    --card: 18 15% 15%;
+    --card-foreground: 30 30% 92%;
+
+    --popover: 18 15% 15%;
+    --popover-foreground: 30 30% 92%;
+
+    --primary: 13 65% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 96 25% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 18 12% 22%;
+    --muted-foreground: 30 15% 70%;
+
+    --accent: 18 15% 22%;
+    --accent-foreground: 13 65% 55%;
+
+    --destructive: 6 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 18 15% 25%;
+    --input: 18 15% 20%;
+    --ring: 13 65% 55%;
+  }
+}
+
+.dark {
+  /* 60-30-10 Color Scheme - Dark Theme */
+  --bg-main: #1E1713;
+  --bg-card: #27201C;
+  --bg-card-hover: #322A25;
+  --bg-input: #18120F;
+  --border-color: #3D332D;
+  --text-main: #F4EAE0;
+  --text-muted: #A89A90;
+
+  /* 30% Structural & Secondary Color - Verde Ajustado Dark */
+  --color-secondary: #9BB08C;
+  --color-secondary-hover: #7D916E;
+  --bg-secondary-light: #2A3326;
+
+  /* 10% Primary Action CTA - Terracota Ajustado Dark */
+  --color-primary: #A6523B;
+  --color-primary-hover: #B85C43;
+  --bg-primary-light: #3D241C;
+
+  /* Gradient Core Dark */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  --gradient-primary-hover: linear-gradient(135deg, var(--color-primary-hover), var(--color-secondary-hover));
+
+  /* Earthy Harmonized Status Colors Dark */
+  --status-success: #9BB591;
+  --status-success-bg: #222E1F;
+  --status-warning: #E5B869;
+  --status-warning-bg: #352B1B;
+  --status-error: #E57A6C;
+  --status-error-bg: #38201D;
+  
+  --skeleton-bg: #26262B;
+  --skeleton-shimmer: #323238;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar customization */
+.main-content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+@media (min-width: 768px) {
+  .main-content {
+    padding: 1.75rem;
+  }
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Typography & Base styles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-main);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.85rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(135, 63, 43, 0.15);
+}
+
+/* Glassmorphism & Custom Card styles */
+.moon-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.moon-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Primary CTA Button */
+.btn-primary {
+  background: var(--gradient-primary);
+  color: #FFFFFF;
+  font-weight: 600;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 8px rgba(135, 63, 43, 0.25);
+}
+
+.btn-primary:hover {
+  background: var(--gradient-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(135, 63, 43, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary Button (30% Verde Sálvia) */
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: #FFFFFF;
+  font-weight: 500;
+  padding: 0.65rem 1.15rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary-hover);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-outline:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--text-muted);
+}
+
+/* Gradient Utilities */
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+/* Badges & Status Pills */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-success {
+  background-color: var(--status-success-bg);
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
+}
+
+.badge-warning {
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning);
+  border: 1px solid var(--status-warning);
+}
+
+.badge-error {
+  background-color: var(--status-error-bg);
+  color: var(--status-error);
+  border: 1px solid var(--status-error);
+}
+
+.badge-sage {
+  background-color: var(--bg-secondary-light);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+}
+
+.badge-terracota {
+  background-color: var(--bg-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(30, 23, 19, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem;
+  animation: slideUp 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsividade (Mobile First Utilities) */
+.app-sidebar {
+  z-index: 50;
+}
+
+.mobile-only {
+  display: none !important;
+}
+
+.desktop-only {
+  display: flex !important; /* using flex default for our UI */
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: flex !important;
+  }
+  
+  .desktop-only {
+    display: none !important;
+  }
+  
+  /* Ajuste no padding do main para mobile */
+  main {
+    padding: 1rem !important;
+  }
+  
+  /* Sidebar Off-canvas behaviour */
+  .app-sidebar {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    z-index: 100 !important;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* Prevent table squishing on all devices */
+table {
+  width: 100% !important;
+}
+
+table th,
+table td {
+  white-space: nowrap;
+}
+
+/* Skeleton Loading System */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skeleton {
+  background-color: var(--skeleton-bg);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    var(--skeleton-shimmer) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+/* Moon Loader Animation */
+@keyframes pulseMoon {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 15px var(--color-primary)); }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+.moon-anim {
+  animation: pulseMoon 2s ease-in-out infinite;
+}
+
