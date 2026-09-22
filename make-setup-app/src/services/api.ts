@@ -16,7 +16,6 @@ export const API_BASE_URL = getApiBaseUrl();
 
 export async function fetchApiData<T>(endpoint: string, options?: RequestInit): Promise<T | null> {
   try {
-    let tenantId = '';
     let userId = '';
     let token = '';
     if (typeof window !== 'undefined') {
@@ -24,7 +23,6 @@ export async function fetchApiData<T>(endpoint: string, options?: RequestInit): 
       if (userStr) {
         try {
           const userObj = JSON.parse(userStr);
-          tenantId = userObj.tenantId || '';
           userId = userObj.id || '';
           token = userObj.token || '';
         } catch (e) {}
@@ -33,7 +31,6 @@ export async function fetchApiData<T>(endpoint: string, options?: RequestInit): 
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'X-Tenant-Id': tenantId,
       'X-User-Id': userId,
       ...options?.headers as Record<string, string>,
     };

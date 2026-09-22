@@ -17,8 +17,6 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 
 export interface UserProfile {
   id: string;
-  tenantId: string;
-  tenantName: string;
   name: string;
   email: string;
   role: UserRole;
@@ -30,19 +28,7 @@ export interface UserProfile {
   isFirstLogin?: boolean;
 }
 
-export interface Tenant {
-  id: string;
-  nomeFamiliaOuEmpresa: string;
-  plano: 'Starter' | 'Pro Family' | 'Enterprise';
-  status: 'ativo' | 'suspenso' | 'cancelado';
-  mrr: number;
-  criadoEm: string;
-  titularEmail: string;
-  membrosCount: number;
-}
-
 export interface JWTTokenClaim {
-  tenant_id: string;
   user_id: string;
   role: UserRole;
   exp: number;
@@ -62,7 +48,6 @@ export type TransactionType = 'receita' | 'despesa';
 
 export interface Lancamento {
   id: string;
-  tenantId?: string;
   usuarioId?: string;
   descricao: string;
   categoria: string;
@@ -80,7 +65,6 @@ export interface Lancamento {
 
 export interface DespesaMensal {
   id: string;
-  tenantId?: string;
   descricao: string;
   categoria: string;
   diaVencimento: number;
@@ -105,7 +89,6 @@ export interface SessaoRealizada {
 
 export interface RitualEstetica {
   id: string;
-  tenantId?: string;
   nome: string;
   categoria: 'estetica';
   generoAlvo: 'todos' | 'homem' | 'mulher' | 'masculino' | 'feminino';
@@ -118,7 +101,6 @@ export interface RitualEstetica {
 
 export interface Pet {
   id: string;
-  tenantId?: string;
   nome: string;
   especie: 'cachorro' | 'gato' | 'outro';
   raca: string;
@@ -131,7 +113,6 @@ export interface Pet {
 
 export interface ReservaPet {
   id: string;
-  tenantId?: string;
   petId: string;
   petNome: string;
   objetivo?: string;
@@ -141,7 +122,6 @@ export interface ReservaPet {
 
 export interface EmergenciaPet {
   id: string;
-  tenantId?: string;
   petId: string;
   petNome: string;
   data: string;
@@ -156,7 +136,6 @@ export interface EmergenciaPet {
 
 export interface ItemAgendaPet {
   id: string;
-  tenantId?: string;
   petId: string;
   petNome: string;
   titulo: string;
@@ -169,7 +148,6 @@ export interface ItemAgendaPet {
 
 export interface ItemCompraPet {
   id: string;
-  tenantId?: string;
   petId: string;
   petNome: string;
   produto: string;
@@ -182,7 +160,6 @@ export interface ItemCompraPet {
 
 export interface CarrinhoSalvoPet {
   id: string;
-  tenantId?: string;
   nome: string;
   frequencia: 'Mensal' | 'Quinzenal' | 'Semanal' | 'Eventual';
   loja?: string;
@@ -191,7 +168,6 @@ export interface CarrinhoSalvoPet {
 
 export interface HistoricoCompraPet {
   id: string;
-  tenantId?: string;
   dataCompra: string;
   nomeLista?: string;
   loja?: string;
@@ -207,7 +183,6 @@ export interface HistoricoCompraPet {
 
 export interface Veiculo {
   id: string;
-  tenantId?: string;
   nome: string;
   marcaModelo: string;
   placa: string;
@@ -224,7 +199,6 @@ export interface Veiculo {
 
 export interface Abastecimento {
   id: string;
-  tenantId?: string;
   veiculoId: string;
   veiculoNome: string;
   posto: string;
@@ -236,7 +210,6 @@ export interface Abastecimento {
 
 export interface ManutencaoVeiculo {
   id: string;
-  tenantId?: string;
   veiculoId: string;
   veiculoNome: string;
   descricao: string;
@@ -251,7 +224,6 @@ export interface ManutencaoVeiculo {
 
 export interface CartaoCredito {
   id: string;
-  tenantId?: string;
   nomeCartao: string;
   banco: string;
   limiteTotal: number;
@@ -264,7 +236,6 @@ export interface CartaoCredito {
 
 export interface FaturaItem {
   id: string;
-  tenantId?: string;
   cartaoId: string;
   descricao: string;
   categoria: string;
@@ -275,7 +246,6 @@ export interface FaturaItem {
 
 export interface Inadimplencia {
   id: string;
-  tenantId?: string;
   credorOuDevedor: string;
   tipo: 'divida_propria' | 'a_receber';
   descricao: string;
@@ -288,7 +258,6 @@ export interface Inadimplencia {
 
 export interface AuditLog {
   id: string;
-  tenantId?: string;
   timestamp: string;
   usuario: string;
   perfil: string;
@@ -316,7 +285,6 @@ export interface PrivacySettings {
 
 export interface MetaPlanejamento {
   id: string;
-  tenantId?: string;
   titulo: string;
   categoria: 'Moradia' | 'Educação' | 'Lazer & Viagens' | 'Veículos' | 'Investimentos' | 'Tecnologia' | 'Outros';
   valorMeta: number;

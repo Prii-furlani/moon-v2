@@ -60,7 +60,6 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
         showToastSuccess(`Bem-vindo(a), ${apiRes.user?.nome || 'Usuário'}! Login efetuado com sucesso.`);
         onLoginSuccess({ 
           id: apiRes.user?.id, 
-          tenantId: apiRes.user?.tenant_id, 
           name: apiRes.user?.nome, 
           email: apiRes.user?.email, 
           role: apiRes.user?.role || 'tenant_admin',
@@ -142,7 +141,6 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
       showToastSuccess('Conta criada com sucesso! Bem-vindo(a).');
       onLoginSuccess({ 
         id: apiRes.user?.id || `usr_${Date.now()}`, 
-        tenantId: apiRes.user?.tenant_id || `tnt_${Date.now()}`, 
         name: apiRes.user?.nome || nome, 
         email: cleanEmail, 
         role: 'tenant_admin', 
