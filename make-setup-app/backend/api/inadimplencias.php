@@ -81,7 +81,25 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'CRIAR_INADIMPLENCIA', json_encode(["id" => $id, "tipo" => $input['tipo'] ?? 'divida_propria']), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Registro de Inadimplência cadastrado com sucesso", "id" => $id]);
+
+        $insertedData = [
+            "id" => $id,
+            "usuarioId" => $userId,
+            "credorOuDevedor" => trim($input['credor_ou_devedor']),
+            "tipo" => in_array($input['tipo'] ?? '', ['divida_propria', 'a_receber']) ? $input['tipo'] : 'divida_propria',
+            "descricao" => trim($input['descricao'] ?? ''),
+            "valorOriginal" => (float)$input['valor_original'],
+            "jurosMulta" => (float)($input['juros_multa'] ?? 0.00),
+            "valorAtualizado" => (float)($input['valor_atualizado'] ?? $input['valor_original']),
+            "dataVencimentoOriginal" => $input['data_vencimento_original'],
+            "status" => in_array($input['status'] ?? '', ['pendente', 'em_renegociacao', 'quitado']) ? $input['status'] : 'pendente'
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Registro de Inadimplência cadastrado com sucesso.", 
+            "data" => $insertedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
@@ -133,7 +151,25 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'EDITAR_INADIMPLENCIA', json_encode(["id" => $input['id']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Inadimplência atualizada com sucesso"]);
+        
+        $updatedData = [
+            "id" => $input['id'],
+            "usuarioId" => $userId,
+            "credorOuDevedor" => trim($input['credor_ou_devedor']),
+            "tipo" => in_array($input['tipo'] ?? '', ['divida_propria', 'a_receber']) ? $input['tipo'] : 'divida_propria',
+            "descricao" => trim($input['descricao'] ?? ''),
+            "valorOriginal" => (float)$input['valor_original'],
+            "jurosMulta" => (float)($input['juros_multa'] ?? 0.00),
+            "valorAtualizado" => (float)($input['valor_atualizado'] ?? $input['valor_original']),
+            "dataVencimentoOriginal" => $input['data_vencimento_original'],
+            "status" => in_array($input['status'] ?? '', ['pendente', 'em_renegociacao', 'quitado']) ? $input['status'] : 'pendente'
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Inadimplência atualizada com sucesso.", 
+            "data" => $updatedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();

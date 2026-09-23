@@ -4,7 +4,6 @@ import {
   ArrowUpRight, 
   ArrowDownLeft, 
   Search, 
-  X,
   Repeat,
   Pencil,
   Trash2
@@ -12,6 +11,15 @@ import {
 import type { Lancamento, TransactionType } from '../types';
 import { confirmDelete, showToastSuccess } from '../utils/sweetAlert';
 import { maskCurrency, unmaskCurrency } from '../utils/masks';
+
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from './ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './ui/select';
 
 interface LancamentosViewProps {
   lancamentos: Lancamento[];
@@ -169,388 +177,360 @@ export const LancamentosView: React.FC<LancamentosViewProps> = ({
     }
 
     setIsModalOpen(false);
-    setEditingId(null);
-    setDescricao('');
-    setValor('');
-    setMesEspecifico('');
-    setIsProgressiveEdit(false);
-    setProgressiveMonth('');
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="flex flex-col gap-6">
       
       {/* Header & Title */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700, color: 'var(--text-main)' }}>
+          <h1 className="text-3xl font-bold text-foreground">
             Lançamentos (Entradas & Saídas)
           </h1>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+          <p className="text-sm text-muted-foreground mt-1">
             Controle de fluxo financeiro, salários, freelas e custos operacionais fixos.
           </p>
         </div>
 
-        <button className="btn-primary" onClick={handleOpenAdd}>
-          <Plus size={16} />
-          <span>+ Novo Lançamento</span>
-        </button>
+        <Button onClick={handleOpenAdd}>
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Lançamento
+        </Button>
       </div>
 
       {/* KPI Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '1.25rem'
-      }}>
-        <div className="moon-card">
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Entradas Previstas</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--status-success)', marginTop: '0.35rem' }}>
-            + R$ {entradasPrevistas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Entradas Previstas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              + R$ {entradasPrevistas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="moon-card">
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Saídas Fixas</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--status-error)', marginTop: '0.35rem' }}>
-            - R$ {saidasFixas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Saídas Fixas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+              - R$ {saidasFixas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="moon-card">
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Resultado Projetado</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '0.35rem' }}>
-            R$ {resultadoProjetado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Resultado Projetado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">
+              R$ {resultadoProjetado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Controls & Table Card */}
-      <div className="moon-card">
-        
-        {/* Filters & Search Toolbar */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          marginBottom: '1.25rem'
-        }}>
+      <Card>
+        <CardContent className="pt-6">
           
-          {/* Tabs Filter */}
-          <div style={{
-            display: 'flex',
-            backgroundColor: 'var(--bg-input)',
-            padding: '3px',
-            borderRadius: 'var(--radius-sm)',
-            border: '1px solid var(--border-color)'
-          }}>
-            {(['todos', 'receita', 'despesa'] as const).map(ft => (
-              <button
-                key={ft}
-                onClick={() => setFilterType(ft)}
-                style={{
-                  padding: '0.45rem 1rem',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  textTransform: 'capitalize',
-                  backgroundColor: filterType === ft ? 'var(--bg-card)' : 'transparent',
-                  color: filterType === ft ? 'var(--color-primary)' : 'var(--text-muted)',
-                  boxShadow: filterType === ft ? 'var(--shadow-sm)' : 'none',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {ft === 'todos' ? 'Todos' : ft === 'receita' ? 'Receita (+)' : 'Despesa (-)'}
-              </button>
-            ))}
+          {/* Filters & Search Toolbar */}
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-5">
+            
+            {/* Tabs Filter */}
+            <div className="flex bg-muted p-1 rounded-md border border-border">
+              {(['todos', 'receita', 'despesa'] as const).map(ft => (
+                <button
+                  key={ft}
+                  onClick={() => setFilterType(ft)}
+                  className={`px-4 py-1.5 rounded-sm text-sm font-semibold transition-all ${
+                    filterType === ft 
+                      ? 'bg-background text-primary shadow-sm' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {ft === 'todos' ? 'Todos' : ft === 'receita' ? 'Receita (+)' : 'Despesa (-)'}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Box */}
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                type="text"
+                placeholder="Filtrar por nome ou categoria..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
           </div>
 
-          {/* Search Box */}
-          <div style={{ position: 'relative', width: '260px' }}>
-            <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input 
-              type="text"
-              placeholder="Filtrar por nome ou categoria..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', paddingLeft: '2.4rem', height: '36px', fontSize: '0.82rem' }}
-            />
-          </div>
-
-        </div>
-
-        {/* Transactions Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Tipo</th>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Descrição</th>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Categoria</th>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Dia do Mês</th>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Recorrência</th>
-                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Valor (R$)</th>
-                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+          {/* Transactions Table */}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Descrição</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Dia do Mês</TableHead>
+                <TableHead>Recorrência</TableHead>
+                <TableHead className="text-right">Valor (R$)</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filteredLancamentos.map(item => {
                 const isReceita = item.tipo === 'receita';
 
                 return (
-                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.15s ease' }}>
-                    
-                    <td style={{ padding: '0.85rem 0.5rem' }}>
-                      <div style={{
-                        width: '30px',
-                        height: '30px',
-                        borderRadius: '50%',
-                        backgroundColor: isReceita ? 'var(--status-success-bg)' : 'var(--status-error-bg)',
-                        color: isReceita ? 'var(--status-success)' : 'var(--status-error)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        {isReceita ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        isReceita ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {isReceita ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}
                       </div>
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '0.85rem 0.5rem' }}>
-                      <div style={{ fontWeight: 700, color: 'var(--text-main)', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                        <span>{item.descricao}</span>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span className="font-semibold text-foreground">{item.descricao}</span>
                         {item.status === 'realizado' && item.metodoPagamento && (
-                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          <span className="text-xs text-muted-foreground">
                             💳 {item.metodoPagamento} {item.dataPagamento ? `em ${item.dataPagamento.split('-').reverse().join('/')}` : ''}
                           </span>
                         )}
                       </div>
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '0.85rem 0.5rem' }}>
-                      <span className="badge badge-sage" style={{ fontSize: '0.7rem' }}>
+                    <TableCell>
+                      <Badge variant="secondary" className="font-medium text-xs">
                         {item.categoria}
-                      </span>
-                    </td>
+                      </Badge>
+                    </TableCell>
 
-                    <td style={{ padding: '0.85rem 0.5rem', color: 'var(--text-muted)' }}>
+                    <TableCell className="text-muted-foreground text-sm">
                       Dia {item.dia}
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '0.85rem 0.5rem', color: 'var(--text-muted)' }}>
+                    <TableCell className="text-muted-foreground text-sm">
                       {item.recorrente ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', color: 'var(--color-secondary)' }}>
-                          <Repeat size={13} /> Mensal
+                        <span className="inline-flex items-center gap-1 text-secondary">
+                          <Repeat className="h-3 w-3" /> Mensal
                           {item.dataFimRecorrencia && item.dataFimRecorrencia < currentMonthYYYYMM && (
-                            <span className="badge" style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-muted)', fontSize: '0.65rem' }}>Antigo</span>
+                            <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0 h-4">Antigo</Badge>
                           )}
                           {item.dataInicioRecorrencia && item.dataInicioRecorrencia > currentMonthYYYYMM && (
-                            <span className="badge" style={{ backgroundColor: 'var(--bg-input)', color: 'var(--color-primary)', fontSize: '0.65rem' }}>Futuro</span>
+                            <Badge className="ml-1 text-[10px] px-1 py-0 h-4">Futuro</Badge>
                           )}
                         </span>
                       ) : (
-                        <span style={{ fontSize: '0.78rem' }}>
+                        <span>
                           Pontual {item.mesEspecifico && `(${item.mesEspecifico})`}
                         </span>
                       )}
-                    </td>                    <td style={{ 
-                      padding: '0.85rem 0.5rem', 
-                      textAlign: 'right', 
-                      fontWeight: 700, 
-                      fontSize: '0.95rem',
-                      color: isReceita ? 'var(--status-success)' : 'var(--status-error)' 
-                    }}>
+                    </TableCell>
+
+                    <TableCell className={`text-right font-bold text-sm ${
+                      isReceita ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                    }`}>
                       {isReceita ? '+' : '-'} R$ {item.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '0.85rem 0.5rem', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                        <button onClick={() => handleOpenEdit(item)} style={{ color: 'var(--color-secondary)', padding: '0.25rem' }} title="Editar">
-                          <Pencil size={15} />
-                        </button>
-                        <button onClick={() => handleDelete(item)} style={{ color: 'var(--status-error)', padding: '0.25rem' }} title="Excluir">
-                          <Trash2 size={15} />
-                        </button>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-secondary" onClick={() => handleOpenEdit(item)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(item)} title="Excluir">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                    </td>
-
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-
-      </div>
+              {filteredLancamentos.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    Nenhum lançamento encontrado.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Modal Add / Edit Lançamento */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>
-                {editingId ? 'Editar Lançamento' : 'Cadastrar Novo Lançamento'}
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} style={{ color: 'var(--text-muted)' }}>
-                <X size={20} />
-              </button>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[540px]">
+          <DialogHeader>
+            <DialogTitle>{editingId ? 'Editar Lançamento' : 'Cadastrar Novo Lançamento'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
+            
+            <div>
+              <Label className="mb-2 block">Tipo <span className="text-destructive">*</span></Label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input type="radio" name="tipo" className="accent-primary" checked={tipo === 'receita'} onChange={() => setTipo('receita')} />
+                  <span>Receita (+)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input type="radio" name="tipo" className="accent-primary" checked={tipo === 'despesa'} onChange={() => setTipo('despesa')} />
+                  <span>Despesa (-)</span>
+                </label>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              
+            <div>
+              <Label className="mb-2 block">Descrição <span className="text-destructive">*</span></Label>
+              <Input 
+                type="text" 
+                required
+                placeholder="Ex: Consultoria de Software"
+                value={descricao}
+                onChange={e => setDescricao(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Tipo <span style={{ color: 'var(--status-error)' }}>*</span></label>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
-                    <input type="radio" name="tipo" checked={tipo === 'receita'} onChange={() => setTipo('receita')} />
-                    <span>Receita (+)</span>
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
-                    <input type="radio" name="tipo" checked={tipo === 'despesa'} onChange={() => setTipo('despesa')} />
-                    <span>Despesa (-)</span>
-                  </label>
-                </div>
+                <Label className="mb-2 block">Categoria <span className="text-destructive">*</span></Label>
+                <Select value={categoria} onValueChange={setCategoria} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Renda Principal">Renda Principal</SelectItem>
+                    <SelectItem value="Renda Extra">Renda Extra</SelectItem>
+                    <SelectItem value="Moradia">Moradia</SelectItem>
+                    <SelectItem value="Utilidades">Utilidades</SelectItem>
+                    <SelectItem value="Alimentação">Alimentação</SelectItem>
+                    <SelectItem value="Saúde">Saúde</SelectItem>
+                    <SelectItem value="Transporte">Transporte</SelectItem>
+                    <SelectItem value="Pets">Pets</SelectItem>
+                    <SelectItem value="Lazer">Lazer</SelectItem>
+                    <SelectItem value="Outros">Outros</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Descrição <span style={{ color: 'var(--status-error)' }}>*</span></label>
-                <input 
-                  type="text" 
+                <Label className="mb-2 block">Valor (R$) <span className="text-destructive">*</span></Label>
+                <Input 
+                  type="text"
                   required
-                  placeholder="Ex: Consultoria de Software"
-                  value={descricao}
-                  onChange={e => setDescricao(e.target.value)}
-                  style={{ width: '100%' }}
+                  placeholder="R$ 0,00"
+                  value={valor}
+                  onChange={e => setValor(maskCurrency(e.target.value))}
                 />
               </div>
+            </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Categoria <span style={{ color: 'var(--status-error)' }}>*</span></label>
-                  <select value={categoria} onChange={e => setCategoria(e.target.value)} style={{ width: '100%' }} required>
-                    <option value="Renda Principal">Renda Principal</option>
-                    <option value="Renda Extra">Renda Extra</option>
-                    <option value="Moradia">Moradia</option>
-                    <option value="Utilidades">Utilidades</option>
-                    <option value="Alimentação">Alimentação</option>
-                    <option value="Saúde">Saúde</option>
-                    <option value="Transporte">Transporte</option>
-                    <option value="Pets">Pets</option>
-                  </select>
-                </div>
+            <div>
+              <Label className="mb-2 block">Dia do Vencimento/Recebimento <span className="text-destructive">*</span></Label>
+              <Input 
+                type="number" 
+                min="1" 
+                max="31"
+                required
+                value={dia} 
+                onChange={e => setDia(e.target.value)} 
+              />
+            </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Valor (R$) <span style={{ color: 'var(--status-error)' }}>*</span></label>
-                  <input 
-                    type="text"
-                    required
-                    placeholder="R$ 0,00"
-                    value={valor}
-                    onChange={e => setValor(maskCurrency(e.target.value))}
-                    style={{ width: '100%' }}
-                  />
-                </div>
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium mt-1">
+              <input type="checkbox" className="accent-primary w-4 h-4 rounded" checked={recorrente} onChange={e => {
+                setRecorrente(e.target.checked);
+                if (e.target.checked) {
+                  setMesEspecifico('');
+                }
+              }} />
+              <span>Repetir mensalmente (Lançamento Recorrente)</span>
+            </label>
+
+            <div className="grid grid-cols-2 gap-4 bg-muted p-4 rounded-md mt-2">
+              <div>
+                <Label className="mb-2 block text-xs">Data do Pagamento (Opcional)</Label>
+                <Input 
+                  type="date"
+                  value={dataPagamento}
+                  onChange={e => setDataPagamento(e.target.value)}
+                />
               </div>
-
-              <div style={{ marginTop: '0.5rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Dia do Vencimento/Recebimento <span style={{ color: 'var(--status-error)' }}>*</span></label>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max="31"
-                    required
-                    value={dia} 
-                    onChange={e => setDia(e.target.value)} 
-                    style={{ width: '100%' }}
-                  />
-                </div>
+              <div>
+                <Label className="mb-2 block text-xs">Método de Pagamento</Label>
+                <Select value={metodoPagamento} onValueChange={setMetodoPagamento}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Não especificado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pix">Pix</SelectItem>
+                    <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
+                    <SelectItem value="Cartão de Débito">Cartão de Débito</SelectItem>
+                    <SelectItem value="Dinheiro">Dinheiro</SelectItem>
+                    <SelectItem value="Transferência">Transferência</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                <input type="checkbox" checked={recorrente} onChange={e => {
-                  setRecorrente(e.target.checked);
-                  if (e.target.checked) {
-                    setMesEspecifico('');
-                  }
-                }} />
-                <span>Repetir mensalmente (Lançamento Recorrente)</span>
-              </label>
+            {!recorrente && (
+              <div className="mt-2">
+                <Label className="mb-2 block">Mês Específico (Opcional - Ex: 13º Salário)</Label>
+                <Input 
+                  type="month" 
+                  value={mesEspecifico} 
+                  onChange={e => setMesEspecifico(e.target.value)} 
+                  className="w-1/2"
+                />
+                <span className="text-xs text-muted-foreground mt-1 block">Deixe vazio se for apenas um ganho/gasto deste mês.</span>
+              </div>
+            )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.5rem', padding: '1rem', backgroundColor: 'var(--bg-input)', borderRadius: 'var(--radius-md)' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Data do Pagamento (Opcional)</label>
-                    <input 
-                      type="date"
-                      value={dataPagamento}
-                      onChange={e => setDataPagamento(e.target.value)}
-                      style={{ width: '100%' }}
+            {editingId && recorrente && (
+              <div className="mt-2 bg-primary/10 p-4 rounded-md border border-primary/20">
+                <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-primary">
+                  <input type="checkbox" className="accent-primary w-4 h-4" checked={isProgressiveEdit} onChange={e => setIsProgressiveEdit(e.target.checked)} />
+                  <span>Aplicar novo valor apenas a partir de um mês específico (Preservar Histórico)</span>
+                </label>
+                
+                {isProgressiveEdit && (
+                  <div className="mt-3">
+                    <Label className="mb-2 block text-primary">A partir de qual mês este valor passa a valer? <span className="text-destructive">*</span></Label>
+                    <Input 
+                      type="month" 
+                      required={isProgressiveEdit}
+                      value={progressiveMonth} 
+                      onChange={e => setProgressiveMonth(e.target.value)} 
+                      className="w-1/2 border-primary/40 focus-visible:ring-primary"
                     />
+                    <span className="text-xs text-primary/70 mt-1 block">Meses anteriores manterão o valor antigo no fluxo de caixa anual.</span>
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Método de Pagamento</label>
-                    <select value={metodoPagamento} onChange={e => setMetodoPagamento(e.target.value)} style={{ width: '100%' }}>
-                      <option value="">Não especificado</option>
-                      <option value="Pix">Pix</option>
-                      <option value="Cartão de Crédito">Cartão de Crédito</option>
-                      <option value="Cartão de Débito">Cartão de Débito</option>
-                      <option value="Dinheiro">Dinheiro</option>
-                      <option value="Transferência">Transferência</option>
-                    </select>
-                  </div>
-                </div>
-
-              {!recorrente && (
-                <div style={{ marginTop: '0.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Mês Específico (Opcional - Ex: 13º Salário)</label>
-                  <input 
-                    type="month" 
-                    value={mesEspecifico} 
-                    onChange={e => setMesEspecifico(e.target.value)} 
-                    style={{ width: '100%', maxWidth: '200px' }}
-                  />
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.2rem' }}>Deixe vazio se for apenas um ganho/gasto deste mês.</span>
-                </div>
-              )}
-
-              {editingId && recorrente && (
-                <div style={{ marginTop: '0.75rem', backgroundColor: 'var(--bg-input)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-primary)' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
-                    <input type="checkbox" checked={isProgressiveEdit} onChange={e => setIsProgressiveEdit(e.target.checked)} />
-                    <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>Aplicar novo valor apenas a partir de um mês específico (Preservar Histórico Passado)</span>
-                  </label>
-                  
-                  {isProgressiveEdit && (
-                    <div style={{ marginTop: '0.85rem' }}>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>A partir de qual mês este valor passa a valer? <span style={{ color: 'var(--status-error)' }}>*</span></label>
-                      <input 
-                        type="month" 
-                        required={isProgressiveEdit}
-                        value={progressiveMonth} 
-                        onChange={e => setProgressiveMonth(e.target.value)} 
-                        style={{ width: '100%', maxWidth: '200px' }}
-                      />
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.2rem' }}>Meses anteriores manterão o valor antigo no fluxo de caixa anual.</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                <button type="button" className="btn-outline" onClick={() => setIsModalOpen(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-primary">
-                  {editingId ? 'Salvar Alterações' : 'Salvar Lançamento'}
-                </button>
+                )}
               </div>
+            )}
 
-            </form>
-          </div>
-        </div>
-      )}
-
+            <DialogFooter className="mt-4">
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">
+                {editingId ? 'Salvar Alterações' : 'Salvar Lançamento'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

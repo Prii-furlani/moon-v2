@@ -238,7 +238,7 @@ export const PrivacyHubView: React.FC<PrivacyHubViewProps> = ({
         <div style={{ marginTop: '1rem', padding: '0.85rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', display: 'flex', gap: '2rem', flexWrap: 'wrap', fontSize: '0.88rem' }}>
           <div>
             <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Tenant ID:</span>
-            <div style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--color-primary)' }}>{user.tenantId}</div>
+            <div style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--color-primary)' }}>{user.usuarioId}</div>
           </div>
 
           <div>

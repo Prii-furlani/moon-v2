@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
 /**
  * MoonFinance (moonfinanceme.com.br)
- * CRUD Completo de Pets e Saúde Veterinária (GET, POST, PUT, DELETE)
+ * CRUD Completo de Pets (GET, POST, PUT, DELETE)
  */
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../core/AuthMiddleware.php';
@@ -24,30 +25,23 @@ if ($method === 'GET') {
         $stmtPets->execute([':usuario_id' => $userId]);
         $pets = $stmtPets->fetchAll();
 
-        $stmtAgenda = $pdo->prepare("SELECT * FROM agenda_pet WHERE usuario_id = :usuario_id ORDER BY data_agendada ASC");
-        $stmtAgenda->execute([':usuario_id' => $userId]);
-        $agenda = $stmtAgenda->fetchAll();
-
-        $stmtEmergencias = $pdo->prepare("SELECT * FROM emergencias_pets WHERE usuario_id = :usuario_id ORDER BY data DESC");
-        $stmtEmergencias->execute([':usuario_id' => $userId]);
-        $emergencias = $stmtEmergencias->fetchAll();
-
-        // Also fetch historico_compras_pets and carrinhos_salvos_pets
-        $stmtHistorico = $pdo->prepare("SELECT * FROM historico_compras_pets WHERE usuario_id = :usuario_id ORDER BY criado_em DESC");
-        $stmtHistorico->execute([':usuario_id' => $userId]);
-        $historico = $stmtHistorico->fetchAll();
-
-        $stmtCarrinhos = $pdo->prepare("SELECT * FROM carrinhos_salvos_pets WHERE usuario_id = :usuario_id ORDER BY criado_em DESC");
-        $stmtCarrinhos->execute([':usuario_id' => $userId]);
-        $carrinhos = $stmtCarrinhos->fetchAll();
-
         echo json_encode([
             "status" => "success",
-            "pets" => $pets,
-            "agenda" => $agenda,
-            "emergencias" => $emergencias,
-            "historicoCompras" => $historico,
-            "carrinhosSalvos" => $carrinhos
+            "data" => array_map(function($p) {
+                return [
+                    "id" => $p['id'],
+                    "usuarioId" => $p['usuario_id'],
+                    "nome" => $p['nome'],
+                    "especie" => $p['especie'],
+                    "raca" => $p['raca'],
+                    "idade" => $p['idade'],
+                    "dataNascimento" => $p['data_nascimento'],
+                    "fotoUrl" => $p['foto_url'],
+                    "gastoMensalEstimado" => (float)$p['gasto_mensal_estimado'],
+                    "ativo" => $p['ativo'] == 1,
+                    "criadoEm" => $p['criado_em']
+                ];
+            }, $pets)
         ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         http_response_code(500);
@@ -58,15 +52,15 @@ if ($method === 'GET') {
     
     if (empty($input['nome'])) {
         http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "Nome do Pet é obrigatório"]);
+        echo json_encode(["status" => "error", "message" => "Nome do Pet é obrigatório."]);
         exit();
     }
 
     try {
         $pdo->beginTransaction();
 
-        $sql = "INSERT INTO pets (id,  usuario_id, nome, especie, raca, idade, data_nascimento, foto_url, gasto_mensal_estimado)
-                VALUES (:id,  :usuario_id, :nome, :especie, :raca, :idade, :data_nascimento, :foto_url, :gasto_mensal_estimado)";
+        $sql = "INSERT INTO pets (id, usuario_id, nome, especie, raca, idade, data_nascimento, foto_url, gasto_mensal_estimado, ativo)
+                VALUES (:id, :usuario_id, :nome, :especie, :raca, :idade, :data_nascimento, :foto_url, :gasto_mensal_estimado, 1)";
         
         $stmt = $pdo->prepare($sql);
         $id = $input['id'] ?? 'pet_' . time() . '_' . rand(100, 999);
@@ -74,24 +68,39 @@ if ($method === 'GET') {
         $stmt->execute([
             ':id' => $id,
             ':usuario_id' => $userId,
-            ':usuario_id' => $userId,
             ':nome' => trim($input['nome']),
-            ':especie' => $input['especie'] ?? 'cachorro',
-            ':raca' => $input['raca'] ?? '',
-            ':idade' => $input['idade'] ?? '',
+            ':especie' => trim($input['especie'] ?? 'cachorro'),
+            ':raca' => trim($input['raca'] ?? ''),
+            ':idade' => trim($input['idade'] ?? ''),
             ':data_nascimento' => $input['data_nascimento'] ?? $input['dataNascimento'] ?? null,
-            ':foto_url' => $input['foto_url'] ?? $input['fotoUrl'] ?? '',
+            ':foto_url' => trim($input['foto_url'] ?? $input['fotoUrl'] ?? ''),
             ':gasto_mensal_estimado' => (float)($input['gasto_mensal_estimado'] ?? $input['gastoMensalEstimado'] ?? 0.00)
         ]);
 
-        $security->logAudit( $userId, $userName, $userRole, 'CRIAR_PET', json_encode(["id" => $id, "nome" => $input['nome']]), $userIp);
+        $security->logAudit($userId, $userName, $userRole, 'CRIAR_PET', json_encode(["id" => $id, "nome" => $input['nome']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Pet cadastrado com sucesso", "id" => $id]);
+        
+        $insertedData = [
+            "id" => $id,
+            "usuarioId" => $userId,
+            "nome" => trim($input['nome']),
+            "especie" => trim($input['especie'] ?? 'cachorro'),
+            "raca" => trim($input['raca'] ?? ''),
+            "idade" => trim($input['idade'] ?? ''),
+            "dataNascimento" => $input['data_nascimento'] ?? $input['dataNascimento'] ?? null,
+            "fotoUrl" => trim($input['foto_url'] ?? $input['fotoUrl'] ?? ''),
+            "gastoMensalEstimado" => (float)($input['gasto_mensal_estimado'] ?? $input['gastoMensalEstimado'] ?? 0.00),
+            "ativo" => true
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Pet cadastrado com sucesso.", 
+            "data" => $insertedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
+        if ($pdo->inTransaction()) $pdo->rollBack();
         http_response_code(500);
         echo json_encode(["status" => "error", "message" => $e->getMessage()]);
     }
@@ -100,7 +109,7 @@ if ($method === 'GET') {
 
     if (empty($input['id'])) {
         http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "ID do Pet é obrigatório para atualização"]);
+        echo json_encode(["status" => "error", "message" => "ID do Pet é obrigatório para atualização."]);
         exit();
     }
 
@@ -122,11 +131,11 @@ if ($method === 'GET') {
             ':id' => $input['id'],
             ':usuario_id' => $userId,
             ':nome' => trim($input['nome']),
-            ':especie' => $input['especie'] ?? 'cachorro',
-            ':raca' => $input['raca'] ?? '',
-            ':idade' => $input['idade'] ?? '',
+            ':especie' => trim($input['especie'] ?? 'cachorro'),
+            ':raca' => trim($input['raca'] ?? ''),
+            ':idade' => trim($input['idade'] ?? ''),
             ':data_nascimento' => $input['data_nascimento'] ?? $input['dataNascimento'] ?? null,
-            ':foto_url' => $input['foto_url'] ?? $input['fotoUrl'] ?? '',
+            ':foto_url' => trim($input['foto_url'] ?? $input['fotoUrl'] ?? ''),
             ':gasto_mensal_estimado' => (float)($input['gasto_mensal_estimado'] ?? $input['gastoMensalEstimado'] ?? 0.00)
         ]);
 
@@ -134,20 +143,35 @@ if ($method === 'GET') {
             throw new Exception("Pet não encontrado ou não pertence a este usuário.");
         }
 
-        $security->logAudit( $userId, $userName, $userRole, 'EDITAR_PET', json_encode(["id" => $input['id']]), $userIp);
+        $security->logAudit($userId, $userName, $userRole, 'EDITAR_PET', json_encode(["id" => $input['id']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Pet atualizado com sucesso"]);
+        
+        $updatedData = [
+            "id" => $input['id'],
+            "usuarioId" => $userId,
+            "nome" => trim($input['nome']),
+            "especie" => trim($input['especie'] ?? 'cachorro'),
+            "raca" => trim($input['raca'] ?? ''),
+            "idade" => trim($input['idade'] ?? ''),
+            "dataNascimento" => $input['data_nascimento'] ?? $input['dataNascimento'] ?? null,
+            "fotoUrl" => trim($input['foto_url'] ?? $input['fotoUrl'] ?? ''),
+            "gastoMensalEstimado" => (float)($input['gasto_mensal_estimado'] ?? $input['gastoMensalEstimado'] ?? 0.00),
+            "ativo" => true
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Pet atualizado com sucesso.",
+            "data" => $updatedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
+        if ($pdo->inTransaction()) $pdo->rollBack();
         http_response_code(500);
         echo json_encode(["status" => "error", "message" => $e->getMessage()]);
     }
 } elseif ($method === 'DELETE') {
     $id = $_GET['id'] ?? null;
-
     if (!$id) {
         $input = json_decode(file_get_contents('php://input'), true);
         $id = $input['id'] ?? null;
@@ -155,7 +179,7 @@ if ($method === 'GET') {
 
     if (!$id) {
         http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "ID é obrigatório para exclusão"]);
+        echo json_encode(["status" => "error", "message" => "ID é obrigatório para exclusão."]);
         exit();
     }
 
@@ -172,14 +196,12 @@ if ($method === 'GET') {
             throw new Exception("Pet não encontrado ou não pertence a este usuário.");
         }
 
-        $security->logAudit( $userId, $userName, $userRole, 'EXCLUIR_PET', json_encode(["id" => $id]), $userIp);
+        $security->logAudit($userId, $userName, $userRole, 'EXCLUIR_PET', json_encode(["id" => $id]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Pet desativado com sucesso"]);
+        echo json_encode(["status" => "success", "message" => "Pet desativado com sucesso."]);
     } catch (Exception $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
+        if ($pdo->inTransaction()) $pdo->rollBack();
         http_response_code(500);
         echo json_encode(["status" => "error", "message" => $e->getMessage()]);
     }

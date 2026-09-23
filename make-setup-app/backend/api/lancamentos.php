@@ -103,7 +103,26 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'CRIAR_LANCAMENTO', json_encode(["id" => $id, "descricao" => $input['descricao']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Lançamento criado com sucesso", "id" => $id]);
+
+        $insertedData = [
+            "id" => $id,
+            "usuarioId" => $userId,
+            "descricao" => trim($input['descricao']),
+            "categoria" => $input['categoria'] ?? 'Geral',
+            "tipo" => $input['tipo'],
+            "valor" => (float)$input['valor'],
+            "dia" => (int)($input['dia'] ?? 5),
+            "recorrente" => !empty($input['recorrente']) ? true : false,
+            "status" => $input['status'] ?? 'realizado',
+            "metodoPagamento" => $input['metodo_pagamento'] ?? $input['metodoPagamento'] ?? null,
+            "dataPagamento" => $input['data_pagamento'] ?? $input['dataPagamento'] ?? null
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Lançamento criado com sucesso.", 
+            "data" => $insertedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
@@ -172,7 +191,26 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'EDITAR_LANCAMENTO', json_encode(["id" => $input['id']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Lançamento atualizado com sucesso"]);
+        
+        $updatedData = [
+            "id" => $input['id'],
+            "usuarioId" => $userId,
+            "descricao" => trim($input['descricao']),
+            "categoria" => $input['categoria'] ?? 'Geral',
+            "tipo" => $input['tipo'],
+            "valor" => (float)$input['valor'],
+            "dia" => (int)($input['dia'] ?? 5),
+            "recorrente" => !empty($input['recorrente']) ? true : false,
+            "status" => $input['status'] ?? 'realizado',
+            "metodoPagamento" => $input['metodo_pagamento'] ?? $input['metodoPagamento'] ?? null,
+            "dataPagamento" => $input['data_pagamento'] ?? $input['dataPagamento'] ?? null
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Lançamento atualizado com sucesso.",
+            "data" => $updatedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();

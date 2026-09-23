@@ -26,6 +26,12 @@ if (empty($nome) || empty($email) || empty($password) || empty($cpf) || empty($d
     exit();
 }
 
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "E-mail inválido"], JSON_UNESCAPED_UNICODE);
+    exit();
+}
+
 try {
     // Verifica se e-mail já existe
     $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE LOWER(email) = :email LIMIT 1");
@@ -48,7 +54,7 @@ try {
     $pdo->beginTransaction();
 
     // Hash da senha e pseudonymização
-    $senha_hash = password_hash($password, PASSWORD_BCRYPT);
+    $senha_hash = password_hash($password, PASSWORD_DEFAULT);
     $user_id = 'usr_' . uniqid();
     $hash_pseudonimizado = hash('sha256', $email . time() . rand(1, 1000));
 
@@ -73,7 +79,7 @@ try {
         ':usuario_id' => $user_id,
         ':usuario_nome' => $nome,
         ':perfil' => 'tenant_admin',
-        ':acao' => 'NOVA_CONTA_CRIADA',
+        ':acao' => 'AUTH_REGISTER_SUCCESS',
         ':detalhes' => 'Nova conta criada com sucesso via registro.',
         ':ip' => $ip
     ]);

@@ -150,7 +150,27 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'CRIAR_DESPESA', json_encode(["id" => $id, "descricao" => $input['descricao']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Despesa mensal criada com sucesso", "id" => $id]);
+
+        $insertedData = [
+            "id" => $id,
+            "usuarioId" => $userId,
+            "descricao" => trim($input['descricao']),
+            "categoria" => $input['categoria'] ?? 'Contas Fixas',
+            "diaVencimento" => (int)($input['diaVencimento'] ?? 10),
+            "valorPrevisto" => (float)$input['valorPrevisto'],
+            "valorPago" => isset($input['valorRealizado']) ? (float)$input['valorRealizado'] : (isset($input['valorPago']) ? (float)$input['valorPago'] : null),
+            "status" => $input['status'] ?? 'previsto',
+            "mes" => $mes,
+            "jurosAcumulados" => (float)($input['juros_acumulados'] ?? $input['jurosAcumulados'] ?? 0.00),
+            "origemRolloverMes" => $input['origem_rollover_mes'] ?? $input['origemRolloverMes'] ?? null,
+            "lancamentoOrigemId" => $input['lancamento_origem_id'] ?? $input['lancamentoOrigemId'] ?? null
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Despesa mensal criada com sucesso.", 
+            "data" => $insertedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
@@ -211,7 +231,26 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'EDITAR_DESPESA', json_encode(["id" => $input['id']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Despesa atualizada com sucesso"]);
+        
+        $updatedData = [
+            "id" => $input['id'],
+            "usuarioId" => $userId,
+            "descricao" => trim($input['descricao']),
+            "categoria" => $input['categoria'] ?? 'Contas Fixas',
+            "diaVencimento" => (int)($input['diaVencimento'] ?? 10),
+            "valorPrevisto" => (float)$input['valorPrevisto'],
+            "valorPago" => isset($input['valorRealizado']) ? (float)$input['valorRealizado'] : (isset($input['valorPago']) ? (float)$input['valorPago'] : null),
+            "status" => $input['status'] ?? 'previsto',
+            "jurosAcumulados" => (float)($input['juros_acumulados'] ?? $input['jurosAcumulados'] ?? 0.00),
+            "origemRolloverMes" => $input['origem_rollover_mes'] ?? $input['origemRolloverMes'] ?? null,
+            "lancamentoOrigemId" => $input['lancamento_origem_id'] ?? $input['lancamentoOrigemId'] ?? null
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Despesa atualizada com sucesso.", 
+            "data" => $updatedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();

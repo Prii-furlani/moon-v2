@@ -77,7 +77,23 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'CRIAR_RITUAL_ESTETICA', json_encode(["id" => $id, "nome" => $input['nome']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Ritual de Estética cadastrado com sucesso", "id" => $id]);
+
+        $insertedData = [
+            "id" => $id,
+            "usuarioId" => $userId,
+            "nome" => trim($input['nome']),
+            "generoAlvo" => in_array($input['genero_alvo'] ?? '', ['todos', 'homem', 'mulher', 'masculino', 'feminino']) ? $input['genero_alvo'] : 'todos',
+            "valor" => (float)$input['valor'],
+            "frequencia" => trim($input['frequencia'] ?? 'Mensal'),
+            "proximaData" => $input['proxima_data'],
+            "historicoGasto" => (float)($input['historico_gasto'] ?? 0.00)
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Ritual de Estética cadastrado com sucesso.", 
+            "data" => $insertedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
@@ -125,7 +141,23 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'EDITAR_RITUAL_ESTETICA', json_encode(["id" => $input['id']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Ritual de Estética atualizado com sucesso"]);
+        
+        $updatedData = [
+            "id" => $input['id'],
+            "usuarioId" => $userId,
+            "nome" => trim($input['nome']),
+            "generoAlvo" => in_array($input['genero_alvo'] ?? '', ['todos', 'homem', 'mulher', 'masculino', 'feminino']) ? $input['genero_alvo'] : 'todos',
+            "valor" => (float)$input['valor'],
+            "frequencia" => trim($input['frequencia'] ?? 'Mensal'),
+            "proximaData" => $input['proxima_data'],
+            "historicoGasto" => (float)($input['historico_gasto'] ?? 0.00)
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Ritual de Estética atualizado com sucesso.", 
+            "data" => $updatedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();

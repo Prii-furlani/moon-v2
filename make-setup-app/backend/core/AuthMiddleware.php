@@ -46,18 +46,9 @@ class AuthMiddleware {
             }
         }
 
-        // Fallback for X- headers if not using Bearer
-        if (!$userId) {
-            foreach ($headers as $key => $val) {
-                $lk = strtolower($key);
-                if ($lk === 'x-user-id') $userId = $val;
-            }
-            $userId = $userId ?? $_GET['user_id'] ?? null;
-        }
-        
         if (!$userId) {
             http_response_code(401);
-            echo json_encode(["status" => "error", "message" => "Não autorizado. Credenciais ausentes."]);
+            echo json_encode(["status" => "error", "message" => "Não autorizado. Credenciais ausentes ou inválidas."]);
             exit();
         }
 

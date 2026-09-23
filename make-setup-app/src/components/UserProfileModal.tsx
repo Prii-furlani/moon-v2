@@ -99,7 +99,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Configurações da Conta</h3>
               <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                {user.name} • Tenant ID: <code style={{ color: 'var(--color-primary)' }}>{user.tenantId}</code>
+                {user.name} • Tenant ID: <code style={{ color: 'var(--color-primary)' }}>{user.usuarioId}</code>
               </p>
             </div>
           </div>

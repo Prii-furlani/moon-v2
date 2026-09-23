@@ -10,26 +10,26 @@ import {
   Search,
   Globe
 } from 'lucide-react';
-import type { Tenant, PrivacySettings } from '../types';
+import type {  PrivacySettings } from '../types';
 import { showToastSuccess } from '../utils/sweetAlert';
 
 interface SaaSAdminMasterViewProps {
-  tenants: Tenant[];
+  tenants: any[];
   privacySettings: PrivacySettings;
-  onToggleTenantStatus: (tenantId: string) => void;
+  onToggleStatus: (usuarioId: string) => void;
   onToggleGlobalMaintenanceMode: () => void;
 }
 
 export const SaaSAdminMasterView: React.FC<SaaSAdminMasterViewProps> = ({
   tenants,
   privacySettings,
-  onToggleTenantStatus,
+  onToggleStatus,
   onToggleGlobalMaintenanceMode
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // SaaS Global Metrics
-  const activeTenantsCount = tenants.filter(t => t.status === 'ativo').length;
+  const activesCount = tenants.filter(t => t.status === 'ativo').length;
   const mrrTotal = tenants
     .filter(t => t.status === 'ativo')
     .reduce((acc, t) => acc + t.mrr, 0);
@@ -37,7 +37,7 @@ export const SaaSAdminMasterView: React.FC<SaaSAdminMasterViewProps> = ({
   const arrTotal = mrrTotal * 12;
   const churnRate = 1.2;
 
-  const filteredTenants = tenants.filter(t => 
+  const filtereds = tenants.filter(t => 
     t.nomeFamiliaOuEmpresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.titularEmail.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -125,11 +125,11 @@ export const SaaSAdminMasterView: React.FC<SaaSAdminMasterViewProps> = ({
       }}>
         <div className="moon-card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Clientes Ativos (Tenants)</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Clientes Ativos (s)</span>
             <Users size={18} />
           </div>
           <div style={{ fontSize: '1.65rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '0.35rem' }}>
-            {activeTenantsCount} <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 400 }}>de {tenants.length} assinantes</span>
+            {activesCount} <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 400 }}>de {tenants.length} assinantes</span>
           </div>
           <span style={{ fontSize: '0.75rem', color: 'var(--status-success)', fontWeight: 600 }}>+12% neste mês</span>
         </div>
@@ -168,11 +168,11 @@ export const SaaSAdminMasterView: React.FC<SaaSAdminMasterViewProps> = ({
         </div>
       </div>
 
-      {/* Tenant Management Table */}
+      {/*  Management Table */}
       <div className="moon-card">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Gerenciamento de Clientes & Assinaturas SaaS (Tenants)</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Gerenciamento de Clientes & Assinaturas SaaS (s)</h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ativar, suspender ou alterar planos de contas de clientes</p>
           </div>
 
@@ -192,7 +192,7 @@ export const SaaSAdminMasterView: React.FC<SaaSAdminMasterViewProps> = ({
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.78rem', textTransform: 'uppercase' }}>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Tenant ID</th>
+                <th style={{ padding: '0.75rem 0.5rem' }}> ID</th>
                 <th style={{ padding: '0.75rem 0.5rem' }}>Cliente / Titular</th>
                 <th style={{ padding: '0.75rem 0.5rem' }}>E-mail Titular</th>
                 <th style={{ padding: '0.75rem 0.5rem' }}>Plano SaaS</th>
@@ -203,7 +203,7 @@ export const SaaSAdminMasterView: React.FC<SaaSAdminMasterViewProps> = ({
               </tr>
             </thead>
             <tbody>
-              {filteredTenants.map(tenant => {
+              {filtereds.map(tenant => {
                 const isAtivo = tenant.status === 'ativo';
 
                 return (
@@ -249,7 +249,7 @@ export const SaaSAdminMasterView: React.FC<SaaSAdminMasterViewProps> = ({
                     <td style={{ padding: '0.85rem 0.5rem', textAlign: 'center' }}>
                       <button
                         onClick={() => {
-                          onToggleTenantStatus(tenant.id);
+                          onToggleStatus(tenant.id);
                           showToastSuccess(`Status do tenant ${tenant.nomeFamiliaOuEmpresa} alterado!`);
                         }}
                         className={isAtivo ? 'btn-outline' : 'btn-primary'}

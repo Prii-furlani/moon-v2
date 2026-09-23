@@ -17,6 +17,7 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 
 export interface UserProfile {
   id: string;
+  usuarioId?: string;
   name: string;
   email: string;
   role: UserRole;

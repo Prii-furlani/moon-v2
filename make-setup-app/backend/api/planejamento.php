@@ -83,7 +83,26 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'CRIAR_META_PLANEJAMENTO', json_encode(["id" => $id, "titulo" => $input['titulo']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Meta de Planejamento criada com sucesso", "id" => $id]);
+
+        $insertedData = [
+            "id" => $id,
+            "usuarioId" => $userId,
+            "titulo" => trim($input['titulo']),
+            "categoria" => trim($input['categoria'] ?? 'Moradia'),
+            "valorMeta" => (float)$input['valor_meta'],
+            "valorAtual" => (float)($input['valor_atual'] ?? 0.00),
+            "prazoTipo" => in_array($input['prazo_tipo'] ?? '', ['curto', 'medio', 'longo']) ? $input['prazo_tipo'] : 'longo',
+            "prazoAnos" => trim($input['prazo_anos'] ?? ''),
+            "dataLimite" => !empty($input['data_limite']) ? $input['data_limite'] : null,
+            "fotoUrl" => trim($input['foto_url'] ?? ''),
+            "observacao" => trim($input['observacao'] ?? '')
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Meta de Planejamento criada com sucesso.", 
+            "data" => $insertedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
@@ -137,7 +156,26 @@ if ($method === 'GET') {
         $security->logAudit( $userId, $userName, $userRole, 'EDITAR_META_PLANEJAMENTO', json_encode(["id" => $input['id']]), $userIp);
 
         $pdo->commit();
-        echo json_encode(["status" => "success", "message" => "Meta de Planejamento atualizada com sucesso"]);
+        
+        $updatedData = [
+            "id" => $input['id'],
+            "usuarioId" => $userId,
+            "titulo" => trim($input['titulo']),
+            "categoria" => trim($input['categoria'] ?? 'Moradia'),
+            "valorMeta" => (float)$input['valor_meta'],
+            "valorAtual" => (float)($input['valor_atual'] ?? 0.00),
+            "prazoTipo" => in_array($input['prazo_tipo'] ?? '', ['curto', 'medio', 'longo']) ? $input['prazo_tipo'] : 'longo',
+            "prazoAnos" => trim($input['prazo_anos'] ?? ''),
+            "dataLimite" => !empty($input['data_limite']) ? $input['data_limite'] : null,
+            "fotoUrl" => trim($input['foto_url'] ?? ''),
+            "observacao" => trim($input['observacao'] ?? '')
+        ];
+
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Meta de Planejamento atualizada com sucesso.", 
+            "data" => $updatedData
+        ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();

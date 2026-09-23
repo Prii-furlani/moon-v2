@@ -78,7 +78,7 @@ export function App() {
     const savedUser = localStorage.getItem('moon_user');
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
-      if (parsedUser.role !== 'admin_master' && (!parsedUser.id || !parsedUser.tenantId)) {
+      if (parsedUser.role !== 'admin_master' && (!parsedUser.id || !parsedUser.usuarioId)) {
         // Sessão corrompida / antiga sem os IDs da API. Forçar limpeza.
         localStorage.removeItem('moon_user');
         setUser(null);
@@ -176,7 +176,7 @@ export function App() {
         if (resPets?.status === 'success') {
           if (Array.isArray(resPets.pets)) {
             setPets(resPets.pets.map(p => ({
-              id: p.id,
+              id: p.id, nome: p.nome || "Pet",
                             especie: p.especie,
               raca: p.raca,
               idade: p.idade,
@@ -293,7 +293,8 @@ export function App() {
       perfil: user!.role === 'admin_master' ? 'Admin Master' : user!.role === 'tenant_admin' ? 'Tenant Admin' : user!.role === 'member' ? 'Member' : 'Viewer',
       acao,
       detalhes,
-      ip: '189.121.44.10'
+      ip: '189.121.44.10',
+      timestamp: formattedDate
     };
 
     setAuditLogs(prev => [newLog, ...prev]);
@@ -369,7 +370,7 @@ export function App() {
 
   // --- CRUD HANDLERS WITH GRANULAR AUDIT LOGGING ---
   const handleAddLancamento = async (novo: Lancamento) => {
-    const item = { ...novo, tenantId: user!.usuarioId: user!.id };
+    const item = { ...novo, usuarioId: user?.usuarioId || user?.id };
     setLancamentos(prev => [item, ...prev]);
     addAuditLog(
       'Lançamento Financeiro Criado',
@@ -440,7 +441,7 @@ export function App() {
   };
 
   const handleAddDespesa = async (nova: DespesaMensal) => {
-    const item = { ...nova, tenantId: user!.tenantId };
+    const item = { ...nova, usuarioId: user?.usuarioId || user?.id };
     setDespesas(prev => [...prev, item]);
     addAuditLog(
       'Despesa Programada Criada',
@@ -508,7 +509,7 @@ export function App() {
   };
 
   const handleAddEstetica = (novo: RitualEstetica) => {
-    setEstetica(prev => [...prev, { ...novo, tenantId: user!.tenantId }]);
+    setEstetica(prev => [...prev, { ...novo, usuarioId: user?.usuarioId || user?.id }]);
     addAuditLog(
       'Ritual de Estética Cadastrado',
       `Serviço: '${novo.nome}' | Público: ${novo.generoAlvo.toUpperCase()} | Valor/Sessão: R$ ${novo.valor.toFixed(2)} | Frequência: ${novo.frequencia}`
@@ -568,7 +569,7 @@ export function App() {
   };
 
   const handleAddPet = async (novo: Pet) => {
-    const item = { ...novo, tenantId: user!.ativo: true };
+    const item = { ...novo, usuarioId: user?.usuarioId || user?.id, ativo: true };
     try {
       const res = await fetchApiData<{ status: string; message?: string; id?: string }>('pets.php', {
         method: 'POST',
@@ -632,7 +633,7 @@ export function App() {
   };
 
   const handleAddCompraPet = async (nova: ItemCompraPet) => {
-    const item = { ...nova, tenantId: user!.tenantId };
+    const item = { ...nova, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; id?: string; message?: string }>('pets.php?action=add_compra', {
         method: 'POST',
@@ -686,7 +687,7 @@ export function App() {
   };
 
   const handleSaveCarrinhoTemplate = async (novo: CarrinhoSalvoPet) => {
-    const item = { ...novo, tenantId: user!.tenantId };
+    const item = { ...novo, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; id?: string; message?: string }>('pets.php?action=save_carrinho', {
         method: 'POST',
@@ -730,7 +731,7 @@ export function App() {
   };
 
   const handleAddAgendaPet = async (novo: ItemAgendaPet) => {
-    const item = { ...novo, tenantId: user!.tenantId };
+    const item = { ...novo, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; id?: string; message?: string }>('pets.php?action=add_agenda', {
         method: 'POST',
@@ -744,7 +745,7 @@ export function App() {
         const parts = (itemComId.data || '').split('-');
         const day = parseInt(parts[2]) || 15;
         const novaDespesaPrevista: DespesaMensal = {
-          id: `desp_ag_${itemComId.id}`,           categoria: 'Pets', diaVencimento: day, valorPrevisto: itemComId.valor, status: 'previsto', mes: yearMonth
+          id: `desp_ag_${itemComId.id}`,           descricao: "Despesa Pet", categoria: "Pets", diaVencimento: day, valorPrevisto: itemComId.valor, status: 'previsto', mes: yearMonth
         };
         setDespesas(prev => [novaDespesaPrevista, ...prev]);
         addAuditLog('Compromisso / Vacina de Pet Agendado', `Agendado '${itemComId.titulo}' para ${itemComId.petNome} em ${itemComId.data} (Valor Est: R$ ${itemComId.valor.toFixed(2)})`);
@@ -778,7 +779,7 @@ export function App() {
     try {
       const res = await fetchApiData<{ status: string; message?: string }>('pets.php?action=concluir_agenda', {
         method: 'POST',
-        body: JSON.stringify({ ...item, tenantId: user!.valorPago, metodoPagamento })
+        body: JSON.stringify({ ...item, valorPago, metodoPagamento })
       });
       if (res?.status === 'success') {
         setAgendaPets(prev => prev.map(a => a.id === item.id ? { ...a, status: 'realizado', valor: valorPago } : a));
@@ -789,7 +790,7 @@ export function App() {
         const day = parseInt(parts[2]) || new Date().getDate();
 
         const novoLancamento: Lancamento = {
-          id: `lan_${Date.now()}`,           categoria: 'Pets', tipo: 'despesa', valor: valorPago, dia: day, recorrente: false, status: 'realizado', metodoPagamento
+          id: `lan_${Date.now()}`,           descricao: "Gasto Pet", categoria: "Pets", tipo: "despesa", valor: valorPago, dia: day, recorrente: false, status: 'realizado', metodoPagamento
         };
         setLancamentos(prev => [novoLancamento, ...prev]);
 
@@ -801,7 +802,7 @@ export function App() {
             return next;
           } else {
             const novaDespesaPago: DespesaMensal = {
-              id: `desp_ag_${item.id}`,               categoria: 'Pets', diaVencimento: day, valorPrevisto: valorPago, valorPago: valorPago, dataPagamento: todayStr, metodoPagamento, status: 'pago', mes: yearMonth
+              id: `desp_ag_${item.id}`,               descricao: "Despesa Pet", categoria: "Pets", diaVencimento: day, valorPrevisto: valorPago, valorPago: valorPago, dataPagamento: todayStr, metodoPagamento, status: 'pago', mes: yearMonth
             };
             return [novaDespesaPago, ...prev];
           }
@@ -880,7 +881,7 @@ export function App() {
   const handleFinalizarCompraMensalPet = async (historico: HistoricoCompraPet) => {
     const todayStr = new Date().toISOString().split('T')[0];
     const currentMonth = todayStr.substring(0, 7);
-    const historicoParaSalvar = { ...historico, tenantId: user!.tenantId };
+    const historicoParaSalvar = { ...historico, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; message?: string }>('pets.php?action=finalizar_compra', {
         method: 'POST',
@@ -891,12 +892,12 @@ export function App() {
         setComprasPets([]);
         
         const novoLancamento: Lancamento = {
-          id: `lan_${Date.now()}`,           categoria: 'Pets', tipo: 'despesa', valor: historico.totalPago, dia: new Date().getDate(), recorrente: true, status: 'realizado'
+          id: `lan_${Date.now()}`,           descricao: "Gasto Pet", categoria: "Pets", tipo: "despesa", valor: historico.totalPago, dia: new Date().getDate(), recorrente: true, status: 'realizado'
         };
         setLancamentos(prev => [novoLancamento, ...prev]);
 
         const novaDespesaCompra: DespesaMensal = {
-          id: `desp_compra_${Date.now()}`,           categoria: 'Pets', diaVencimento: new Date().getDate(), valorPrevisto: historico.totalPago, valorPago: historico.totalPago,
+          id: `desp_compra_${Date.now()}`,           descricao: "Despesa Pet", categoria: "Pets", diaVencimento: new Date().getDate(), valorPrevisto: historico.totalPago, valorPago: historico.totalPago,
           dataPagamento: todayStr, metodoPagamento: historico.metodoPagamento, status: 'pago', mes: currentMonth
         };
         setDespesas(prev => [novaDespesaCompra, ...prev]);
@@ -911,7 +912,7 @@ export function App() {
   };
 
   const handleRegistrarEmergenciaPet = async (emergencia: EmergenciaPet) => {
-    const emergenciaParaSalvar = { ...emergencia, tenantId: user!.tenantId };
+    const emergenciaParaSalvar = { ...emergencia, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; message?: string }>('pets.php?action=registrar_emergencia', {
         method: 'POST',
@@ -936,12 +937,12 @@ export function App() {
           const currentMonth = todayStr.substring(0, 7);
           
           const novoLancamento: Lancamento = {
-            id: `lan_emerg_${Date.now()}`,             categoria: 'Pets', tipo: 'despesa', valor: valorRestante, dia: new Date().getDate(), recorrente: false, status: 'realizado', metodoPagamento: emergencia.metodoPagamentoRestante
+            id: `lan_emerg_${Date.now()}`,             descricao: "Gasto Pet", categoria: "Pets", tipo: "despesa", valor: valorRestante, dia: new Date().getDate(), recorrente: false, status: 'realizado', metodoPagamento: emergencia.metodoPagamentoRestante
           };
           setLancamentos(prev => [novoLancamento, ...prev]);
 
           const novaDespesa: DespesaMensal = {
-            id: `desp_emerg_${Date.now()}`,             categoria: 'Pets', diaVencimento: new Date().getDate(), valorPrevisto: valorRestante, valorPago: valorRestante, dataPagamento: todayStr,
+            id: `desp_emerg_${Date.now()}`,             descricao: "Despesa Pet", categoria: "Pets", diaVencimento: new Date().getDate(), valorPrevisto: valorRestante, valorPago: valorRestante, dataPagamento: todayStr,
             metodoPagamento: emergencia.metodoPagamentoRestante, status: 'pago', mes: currentMonth
           };
           setDespesas(prev => [novaDespesa, ...prev]);
@@ -957,7 +958,7 @@ export function App() {
   };
 
   const handleAddVeiculo = async (novo: Veiculo) => {
-    const item = { ...novo, tenantId: user!.tenantId };
+    const item = { ...novo, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; id?: string; message?: string }>('veiculos.php', {
         method: 'POST',
@@ -1010,7 +1011,7 @@ export function App() {
   };
 
   const handleAddAbastecimento = async (novo: Abastecimento) => {
-    const item = { ...novo, tenantId: user!.tenantId };
+    const item = { ...novo, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; id?: string; message?: string }>('veiculos.php?action=registrar_abastecimento', {
         method: 'POST',
@@ -1065,7 +1066,7 @@ export function App() {
   };
 
   const handleAddManutencao = async (nova: ManutencaoVeiculo) => {
-    const item = { ...nova, tenantId: user!.tenantId };
+    const item = { ...nova, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; id?: string; message?: string }>('veiculos.php?action=registrar_manutencao', {
         method: 'POST',
@@ -1118,7 +1119,7 @@ export function App() {
   };
 
   const handleAddCartao = async (novo: CartaoCredito) => {
-    const item = { ...novo, tenantId: user!.tenantId };
+    const item = { ...novo, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; id?: string; message?: string }>('cartoes.php', {
         method: 'POST',
@@ -1171,7 +1172,7 @@ export function App() {
   };
 
   const handleAddFaturaItem = async (novo: FaturaItem) => {
-    const item = { ...novo, tenantId: user!.tenantId };
+    const item = { ...novo, usuarioId: user?.usuarioId || user?.id };
     try {
       const res = await fetchApiData<{ status: string; id?: string; message?: string }>('cartoes.php?action=registrar_compra', {
         method: 'POST',
@@ -1256,14 +1257,14 @@ export function App() {
 
         // 1. Atualizar state de lançamentos
         const novoLancamento: Lancamento = {
-          id: `lan_${Date.now()}`,           categoria: 'Cartão de Crédito', tipo: 'despesa', valor: valorPago, dia: new Date().getDate(),
+          id: `lan_${Date.now()}`, descricao: "Lançamento Automático",            categoria: 'Cartão de Crédito', tipo: 'despesa', valor: valorPago, dia: new Date().getDate(),
           recorrente: false, status: 'realizado', metodoPagamento
         };
         setLancamentos(prev => [novoLancamento, ...prev]);
 
         // 2. Atualizar state de despesas mensais (atual e possível rollover)
         const novaDespesa: DespesaMensal = {
-          id: `desp_${Date.now()}`,           categoria: 'Cartão de Crédito', diaVencimento: new Date().getDate(), valorPrevisto: valorFatura,
+          id: `desp_${Date.now()}`, descricao: 'Pagamento de Fatura do Cartão', categoria: 'Cartão de Crédito', diaVencimento: new Date().getDate(), valorPrevisto: valorFatura,
           valorPago: valorPago, dataPagamento: todayStr, metodoPagamento, status: 'pago', mes: currentMonth
         };
         setDespesas(prev => [novaDespesa, ...prev]);
@@ -1274,7 +1275,7 @@ export function App() {
           const nextMonthStr = nextMonthDate.toISOString().substring(0, 7);
           
           const despesaRollover: DespesaMensal = {
-            id: `desp_roll_${Date.now()}`,             categoria: 'Cartão de Crédito', diaVencimento: new Date().getDate(), valorPrevisto: saldoDevedor + juros,
+            id: `desp_roll_${Date.now()}`, descricao: 'Rollover (Transbordo Fatura Anterior)', categoria: 'Cartão de Crédito', diaVencimento: new Date().getDate(), valorPrevisto: saldoDevedor + juros,
             valorPago: 0, status: 'previsto', mes: nextMonthStr
           };
           setDespesas(prev => [despesaRollover, ...prev]);
@@ -1320,7 +1321,7 @@ export function App() {
   };
 
   const handleAddInadimplencia = (nova: Inadimplencia) => {
-    setInadimplencias(prev => [...prev, { ...nova, tenantId: user!.tenantId }]);
+    setInadimplencias(prev => [...prev, { ...nova, usuarioId: user?.usuarioId || user?.id }]);
     addAuditLog(
       'Nova Pendência / Inadimplência Registrada',
       `Credor/Devedor: '${nova.credorOuDevedor}' | Tipo: ${nova.tipo.toUpperCase()} | Valor Orig.: R$ ${nova.valorOriginal.toFixed(2)} | Valor Atualizado: R$ ${nova.valorAtualizado.toFixed(2)}`
@@ -1457,8 +1458,8 @@ export function App() {
                 <CardSkeleton />
                 <CardSkeleton />
               </div>
-              <TableSkeleton rows={4} />
-              <TableSkeleton rows={3} />
+              <TableSkeleton />
+              <TableSkeleton />
             </div>
           ) : (
             <>

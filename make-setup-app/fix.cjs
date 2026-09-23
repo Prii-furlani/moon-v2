@@ -1,0 +1,11 @@
+const fs = require('fs');
+let c = fs.readFileSync('src/App.tsx', 'utf8');
+c = c.replace(/tenantId:\s*user!\.tenantId/g, 'usuarioId: user?.usuarioId || user?.id');
+c = c.replace(/tenantId:\s*user!\.ativo/g, 'usuarioId: user?.usuarioId || user?.id, ativo');
+c = c.replace(/tenantId:\s*user!\.valorPago/g, 'valorPago');
+c = c.replace(/categoria:\s*'Pets',(\s+)tipo:\s*'despesa'/g, 'descricao: "Gasto Pet", categoria: "Pets",$1tipo: "despesa"');
+c = c.replace(/categoria:\s*'Pets',(\s+)diaVencimento/g, 'descricao: "Despesa Pet", categoria: "Pets",$1diaVencimento');
+c = c.replace(/id:\s*p\.id,/g, 'id: p.id, nome: p.nome || "Pet",');
+c = c.replace(/import\s*\{\s*Skeleton,\s*CardSkeleton,\s*TableSkeleton\s*\}\s*from\s*'[^']+';/g, 'import { Skeleton } from "./components/ui/skeleton";');
+fs.writeFileSync('src/App.tsx', c);
+console.log('Fixed');
